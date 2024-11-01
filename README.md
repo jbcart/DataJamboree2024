@@ -11,13 +11,13 @@ Julia code for the ASA computing section mini-symposium data jamboree.
 Full disclosure, this was my first time webscrapping in `Julia`, so I'm sure that my solution could be a little more elegant, though webscrapping concepts are pretty consistent across languages.
 In this demo - we deal with two different types of websites, dynamic and static.
 For dynamic sites we need a web driver in order to interact with the website through code.
-This allows the different scripts on the website to run from which we can then scrap the compiled html. 
+This allows the different scripts on the website to run after which we can then scrap the compiled html. 
 
 In `Julia` we have two options of packages: `Blink` which is a wrapper for `Electron` and can communicate to the browser through `JavaScript`.
-I was not able to get the [olympics](https://olympics.com/en/paris-2024/athletes/artistic-gymnastics) website to load in Blink and other websites worked did load so I did not spend too much time messing with with the package.
-Additionally, for `Blink` you are passing `JavaScript` code which is a little more complicated than using the wrapper functions from other web driver packages (though may be easier if you are familiar with `JavaScript`).
+I was not able to get the [olympics](https://olympics.com/en/paris-2024/athletes/artistic-gymnastics) website to load in Blink (other websites did load) so I did not spend too much time messing with with the package.
+Additionally, for `Blink` you are pass `JavaScript` code which is a little more complicated than using the wrapper functions from a web driver package (though may be easier if you are familiar with `JavaScript`).
 
-The second option is `WebDriver`, a wrapper for `Selenium` and should be very familiar to those who have used the `webdriver` package in `Python`[^1]. 
+The second option is `WebDriver`, a wrapper for `Selenium` and should be very familiar to those who have used the `webdriver` package in `Python`. [^1] 
 This is the package that I use in the demo. 
 [The documentation](https://nosferican.github.io/WebDriver.jl/dev/) is rather sparse, but there is a nice tutorial for web automation using `WebDriver` in julia [here](https://www.youtube.com/watch?v=KWYNlIOxQpo).
 While `WebDriver` accomplishes everything we need for this demo, the package is more lightweight than the correpsonding `Python` package.
@@ -27,8 +27,7 @@ For static websites we use the `HTTP` package to scrap the html, `Gumbo` to pars
 Lastly, the `Cascadia` package can extract elements from the html using css selectors.
 [Here](https://www.youtube.com/watch?v=qv7M5oBZPWE) is a tutorial for these three packages. 
 
-[^1]:
-  The is also another `WebDriver` package out there which is deprecated. Some tutorials on YouTube use this older package which has different functions.
+[^1]: The is also another `WebDriver` package out there which is deprecated. Some tutorials on YouTube use this older package which has different functions.
 
 ## Getting Started
 In the chunk below we create a virtual environment with `Pkg.activate(@__DIR__)` and install all the packages required with `Pkg.instantiate()`.
