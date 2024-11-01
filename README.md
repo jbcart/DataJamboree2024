@@ -331,5 +331,5 @@ p2 = bar(team.month, team.rel_freq, legend=false, title="Team")
 plot(p1,p2, xaxis="Month", layout=(1,2))
 ```
 I wouldn't draw any strong conclusions from an exploratory look from the data though, for individual sports, it looks like there are more athletes born in January (the oldest in their age category). For the team sports it appears that there are more athletes born in July. At least in the United States, July is an odd cutoff, I would have expected August or September as the cutoff for team sports to align with the school year.  
-![](figures/fig1.png)
+![](figures/fig1.png)<br>
 I expect different team sports use different age cutoffs across different countries, whereas individual sports may be more consistent using a Jan 1st cutoff. Fun comparison none the less, worth spouting out as a fun fact at a dinner party, but not one I'd place any monitary value on if I were making a bet.
