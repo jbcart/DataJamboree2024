@@ -8,23 +8,23 @@ date: November 2nd, 2024
 Julia code for the ASA computing section mini-symposium data jamboree. 
 
 ## Intro
-Full disclosure, this was my first time webscrapping in `Julia`, so I'm sure that my solution could be a little more elegant, though webscrapping concepts are pretty consistent across languages.
+Full disclosure, this was my first time webscraping in `Julia`, so I'm sure that my solution could be a little more elegant.
 In this demo - we deal with two different types of websites, dynamic and static.
 For dynamic sites we need a web driver in order to interact with the website through code.
-This allows the different scripts on the website to run after which we can then scrap the compiled html. 
+This allows the different scripts on the website to run, after which we can then scrape the compiled html. 
 
-In `Julia` we have two options of packages: `Blink` which is a wrapper for `Electron` and can communicate to the browser through `JavaScript`.
+In Julia we have two options of packages: `Blink` which is a wrapper for `Electron` and can communicate to the browser through JavaScript.
 I was not able to get the [olympics](https://olympics.com/en/paris-2024/athletes/artistic-gymnastics) website to load in Blink (other websites did load) so I did not spend too much time messing with with the package.
-Additionally, for `Blink` you are pass `JavaScript` code which is a little more complicated than using the wrapper functions from a web driver package (though may be easier if you are familiar with `JavaScript`).
+Additionally, for `Blink` you pass JavaScript code to the web driver which is a little more complicated than using the wrapper functions from a web driver package (though may be easier if you are familiar with `JavaScript`).
 
 The second option is `WebDriver`, a wrapper for Selenium and should be very familiar to those who have used the `webdriver` package in Python. [^1] 
 This is the package that I use in the demo. 
 [The documentation](https://nosferican.github.io/WebDriver.jl/dev/) is rather sparse, but there is a nice tutorial for web automation using `WebDriver` in Julia [here](https://www.youtube.com/watch?v=KWYNlIOxQpo).
 While `WebDriver` accomplishes everything we need for this demo, the package is more lightweight than the correpsonding `Python` package.
-Using the `WebDriver` package requires a web driver application and following the linked tutorial, I also use `chromedriver`, but you can select a different web driver if you prefer.
+Using the `WebDriver` package requires a web driver application and following the linked tutorial I also use `chromedriver`. You can select a different web driver if you prefer.
 
-For static websites we use the `HTTP` package to scrap the html, `Gumbo` to parse the html into a structured object which can then be easily indexed by the tree structure of the html code.
-Lastly, the `Cascadia` package can extract elements from the html using css selectors.
+For static websites we use the `HTTP` [[docs]](https://juliaweb.github.io/HTTP.jl/stable/) package to scrap the html, `Gumbo` [[github]](https://github.com/JuliaWeb/Gumbo.jl) to parse the html into a structured object which can then be easily indexed by the tree structure of the html code.
+Lastly, the `Cascadia` [[docs]](https://docs.juliahub.com/Cascadia/Pq6Fi/1.0.2/) package can extract elements from the html using css selectors.
 [Here](https://www.youtube.com/watch?v=qv7M5oBZPWE) is a tutorial for these three packages. 
 
 [^1]: There is another `WebDriver` package out there which is deprecated. Some tutorials on YouTube use this older package which has different functions.
@@ -71,11 +71,11 @@ session = Session(wd)
 ```
 
 ### Navigating through and scraping the athletes names webpage
-Before we create a function, we will figure out how to navigate through the webpage through the webdriver.
+Before we create a function to get all the athletes, we will figure out how to navigate through the webpage through the webdriver.
 This essentially boils down to inspecting the website to find the appropriate tag for the buttons that we want to click, using the tag (css selector, xpath, etc.) to find the element through code, then clicking the button with code. For each page that we are on, we can scrape the source html with the parse `parsehtml` function from `Gumbo` and then extract the elements that we want using css selectors and the `Cascadia` package. 
 
 Lets start with [artistic gymnastics](https://olympics.com/en/paris-2024/athletes/artistic-gymnastics).
-With our session already up, we can navigate to the url with `navigate!()`.
+With our session already up, we can navigate to the url with `navigate!`.
 
 ```julia 
 url = "https://olympics.com/en/paris-2024/athletes/artistic-gymnastics"
@@ -83,10 +83,11 @@ navigate!(session, url)
 ```
 The accept cookies pops up first:
 ![](figures/screenshot_1.png)
+
 We can inspect the element (right click and select inspect on Mac) to find a tag for the accept cookies button:
 ![](figures/screenshot_2.png)
-and can see the the css selector is `#onetrust-accept-btn-handler` (`#` is for the id). 
-We find this element with the `Element` function from `WebDriver` and 'click' the element with `click!()`.
+Here we see the the css selector is `#onetrust-accept-btn-handler` (`#` is for the id). 
+We find this element with the `Element` function from `WebDriver` and 'click' the element with `click!`.
 ```julia
 cookies_button = Element(session, "css selector", "#onetrust-accept-btn-handler")
 click!(cookies_button)
@@ -114,7 +115,7 @@ for item ∈ matches
   push!(athlete_names, nodeText(item))
 end
 ```
-This only gives us the first 50 athletes, we need to navigate to the next page button and click it to bring up the next page of athletes.
+This only gives us the first 50 athletes, so we need to navigate to the next page button and click it to bring up the next page of athletes.
 Following the same process as before we inspect the element to find the appropriate tag. Find the element with our code and click it.
 ```julia
 next_button = Element(session, "css selector", "div.mirs-pagination-right > button:nth-child(2)")
@@ -126,22 +127,22 @@ The urls are consistent so we can append the base url with the sport name
 ```julia
 url = "https://olympics.com/en/paris-2024/athletes/" * sport
 ```
-After we navigate to the webpage, we want the the system to sleep so the webpage renders completely before we try to click any buttons (or scrape data).
+After we navigate to the webpage, we want the the system to sleep so the webpage has time to render the html completely before we try to click any buttons (or scrape data).
 ```julia
 navigate!(session, url)
-  sleep(sleep_time)
+sleep(sleep_time)
 ```
 We only need to click the cookies button once, so we throw it into a try-catch statement so our function doesn't break when the cookies button doesn't appear. 
 ```julia
-  try 
-    click!(cookies_button)
-  catch
-  end
+try 
+  click!(cookies_button)
+catch
+end
 ```
 In order to move to the next page button, we can use the `moveto!` function.
-We need to move to the button in the webdriver so that it is in view of the driver otherwise the click command won't work.
+We need the button to be in the view of the webdriver so otherwise the click command won't work.
 Moving to the next page button didn't work very well so I found the tag for the box around the next page buttons which seemed to work better. 
-A single execution of `moveto!` didn't always navigate to the box, so I threw it into a for loop to help the web driver really navigate to the button. 
+A single execution of `moveto!` didn't always navigate to the box, so I threw it into a for loop to help the web driver *really* navigate to the button. 
 ```julia
 box = Element(session, "css selector", "div.mirs-pagination-right")
   sleep(sleep_time)
@@ -220,12 +221,12 @@ delete!(session)
 ```
 ## Scrape Birth Month from Wikipedia Pages
 ### Reformat names into wikipage format.
-Currently the names are in the format `LAST NAME First Name`. We need them in the format `First_Name_Last_Name` to access the wikipedia page for each athlete. 
+Currently the names are in the format `FAMILY NAME Given Name`. We need them in the format `Given_Name_Family_Name` to access the wikipedia page for each athlete. 
 We will split our name string by the first space that is followed by a title case word with the regular expression `r"(\s)(?=[A-Z][a-z]+)"`. 
 [This](https://regexr.com) is my go to website to build and test regular expressions, it is quite useful as it explains each element of the regex. 
 The limit option in the `split` function, limits the size of the output vector to length 2, thus we will only split at the first space followed by a title case word, rather than split at every space followed by a title case word.
 We reorder the names and convert to title case and replace all spaces with unerscores.
-If the athlete does not have a first name, we just convert the last name to title case. 
+If the athlete does not have a given name (i.e. title case name listed), we just convert the family name to title case. 
 ```julia
 for i ∈ 1:nrow(df)
   split_name = split(df[i,:athlete_name], r"(\s)(?=[A-Z][a-z]+)"; limit=2)
@@ -238,8 +239,8 @@ end
 ```
 
 ### Scrape birth months
-We will write a function to modify our `df` with the athelete's birth month from wikipedia if we can successfully load the page.
-The athlete names from the olympics page do not contain hyphens, special characters, or additional tags to disambiguate persons (e.g. Liu Yang the gymnast from the taikonot or violinist), so our reformatting of the name will not successfully find the wiki page for quite a few athletes. 
+We will write a function to modify our `df` with the athelete's birth month from wikipedia if we can successfully load athlete's the page.
+The athlete names from the olympics page do not contain hyphens, special characters, or additional tags wikipedia uses to disambiguate persons (e.g. Liu Yang the gymnast from the Liu Yang the taikonot or Liu Yang the violinist), so our reformatting of the name will not successfully find the wiki page for quite a few athletes. 
 
 With our reformatted names we get the html with `HTTP.get`
 and then parse.
@@ -250,7 +251,7 @@ parsed = parsehtml(String(html))
 ```
 The output from `HTTP.get` is in binary, so we need to convert it to text first with `String`.
 
-Inspecting the birthday element, we can see that there is a hidden element with the birthday is YYYY-MM-DD format, which will be much easier to work with.
+Inspecting the birthday element, we can see that there is a hidden element with the birthday in YYYY-MM-DD format, which will be much easier to work with.
 ![](figures/screenshot_4.png)
 This element conveniently has the css class 'bday'.
 
@@ -273,7 +274,7 @@ function get_athlete_birth_month!(df)
 end
 ```
 
-After we scrape the birth months from the individual wikipedia pages, we create a column from the sport type, filter out the athlete's for whom we could not load their wiki page and save the data frame. 
+After we scrape the birth months from the individual wikipedia pages, we create a column for the sport type, filter out the athletes for whom we could not load their wiki page and save the data frame. 
 ```julia
 get_athlete_birth_month!(df)
 
@@ -329,6 +330,6 @@ p1 = bar(ind.month, ind.rel_freq, yaxis="Relative Frequency", legend=false, titl
 p2 = bar(team.month, team.rel_freq, legend=false, title="Team")
 plot(p1,p2, xaxis="Month", layout=(1,2))
 ```
-I wouldn't draw any strong conclusions from an exploratory look from the data though, for individual sports, it looks like there are more athletes born in January (the oldest in their age category). For the team sports it appears that there are more individuals born in July. At least in the United States July is an odd cutoff, I would have expected August for team sports that align with the school year.  
+I wouldn't draw any strong conclusions from an exploratory look from the data though, for individual sports, it looks like there are more athletes born in January (the oldest in their age category). For the team sports it appears that there are more athletes born in July. At least in the United States, July is an odd cutoff, I would have expected August or September as the cutoff for team sports to align with the school year.  
 ![](figures/fig1.png)
-I expect different team sports use different age cutoffs across different countries, whereas individual sports may be more consistent. Fun comparison none the less, worth spouting out as a fun fact at a dinner party, but not one I'd place any monitary value on if I were making a bet.
+I expect different team sports use different age cutoffs across different countries, whereas individual sports may be more consistent using a Jan 1st cutoff. Fun comparison none the less, worth spouting out as a fun fact at a dinner party, but not one I'd place any monitary value on if I were making a bet.
