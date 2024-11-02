@@ -70,7 +70,7 @@ wd = RemoteWebDriver(
 session = Session(wd)
 ```
 
-### Navigating through and scraping the athletes names webpage
+### Navigating through the webpage and scraping the athletes names
 Before we create a function to get all the athletes, we will figure out how to navigate through the webpage through the webdriver.
 This essentially boils down to inspecting the website to find the appropriate tag for the buttons that we want to click, using the tag (css selector, xpath, etc.) to find the element through code, then clicking the button with code. For each page that we are on, we can scrape the source html with the parse `parsehtml` function from `Gumbo` and then extract the elements that we want using css selectors and the `Cascadia` package. 
 
