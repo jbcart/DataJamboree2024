@@ -1,5 +1,7 @@
 using HTTP, Gumbo, Cascadia # for static webscraping
 using WebDriver # for remote control of a website
+# other option
+# using Blink
 
 # Start Webdriver
 capabilities = Capabilities("chrome")
@@ -24,6 +26,7 @@ click!(cookies_button)
 
 # Scrape rendered html
 html = parsehtml(source(session))
+fieldnames(typeof(html))
 body = html.root[2]
 
 # HTMLElements
