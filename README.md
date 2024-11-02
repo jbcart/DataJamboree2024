@@ -145,11 +145,11 @@ Moving to the next page button didn't work very well so I found the tag for the 
 A single execution of `moveto!` didn't always navigate to the box, so I threw it into a for loop to help the web driver *really* navigate to the button. 
 ```julia
 box = Element(session, "css selector", "div.mirs-pagination-right")
+sleep(sleep_time)
+for _ ∈ 1:3
+  moveto!(box)
   sleep(sleep_time)
-  for _ ∈ 1:3
-    moveto!(box)
-    sleep(sleep_time)
-  end
+end
 ```
 Lastly, we want to keep navigating and scraping athlete names as long as the next page button is enabled. We will break out of a while loop after we scrape the final page and check with `isenabled(next_button)` returns `false`. 
 ```julia
