@@ -67,7 +67,7 @@ function get_athlete_names(sport, session, sleep_time=1)
   cookies_button = Element(session, "css selector", "#onetrust-accept-btn-handler")
   try 
     click!(cookies_button)
-  catch
+  catch 
   end
   println("Webpage Loaded")
 
